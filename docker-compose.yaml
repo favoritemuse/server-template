@@ -8,11 +8,12 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./website:/var/www/html
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./logs/nginx:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d  # Директорія для конфігурацій Nginx
+      - ./www:/var/www/html  # Загальна директорія для файлів сайтів
+      - ./nginx/logs:/var/log/nginx  # Логи Nginx
     depends_on:
       - php
+      - db
     networks:
       - app-network
 
@@ -20,8 +21,8 @@ services:
     image: php:8.1-fpm
     container_name: php
     volumes:
-      - ./website:/var/www/html
-      - ./logs/php:/var/log/php
+      - ./www:/var/www/html  # Директорія для файлів сайтів
+      - ./php/logs:/var/log/php  # Логи PHP
     networks:
       - app-network
 
@@ -45,7 +46,9 @@ services:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "8080:80"
+      - "8080:80"  # Власний порт для phpMyAdmin
+    depends_on:
+      - db
     networks:
       - app-network
 

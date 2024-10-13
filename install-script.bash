@@ -21,7 +21,8 @@ sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Install mailutils to send emails
-sudo apt install -y mailutils
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mailutils
+
 
 # Add admin user and set password
 sudo useradd -m $ADMIN_USER
@@ -34,13 +35,10 @@ sudo usermod -aG docker $ADMIN_USER
 cd /home/$ADMIN_USER
 
 # Clone the Docker Compose template from GitHub
-git clone https://github.com/favoritemuse/server-template.git
-
-# Change directory to the cloned repository
-cd server-template
+git clone https://github.com/favoritemuse/server-template.git .
 
 # Create required directories for website and logs
-mkdir -p ./website ./logs/nginx ./logs/php
+mkdir -p ./www ./nginx/logs ./php/logs
 
 # Save passwords and database information into .env file
 echo "DB_NAME=${DB_NAME}" >> .env
@@ -49,16 +47,16 @@ echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
 echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}" >> .env
 
 # Replace placeholder domain name in Nginx configuration with the actual domain name
-sed -i "s/your-domain.com/$DOMAIN_NAME/g" nginx.conf
+sed -i "s/your-domain.com/$DOMAIN_NAME/g" nginx/conf.d/default.conf
 
 # Change ownership of the template files to the admin user
-sudo chown -R $ADMIN_USER:$ADMIN_USER /home/$ADMIN_USER/server-template
+sudo chown -R $ADMIN_USER:$ADMIN_USER /home/$ADMIN_USER/*
 
 # Navigate to the directory where docker-compose.yml is located
-cd /home/$ADMIN_USER/server-template
+cd /home/$ADMIN_USER/
 
 # Bring up the Docker containers using Docker Compose
-docker-compose up -d
+docker-compose up -d --build
 
 # Create a message with server details
 MESSAGE="Server setup is complete.\n\nDomain: $DOMAIN_NAME\nDatabase Name: $DB_NAME\nDatabase User: $DB_USER\nDatabase Password: $DB_PASSWORD\nRoot Password: $DB_ROOT_PASSWORD\n\nAdmin User: $ADMIN_USER\nAdmin Password: $ADMIN_PASSWORD"
