@@ -38,16 +38,12 @@ cd /home/$ADMIN_USER
 git clone https://github.com/favoritemuse/server-template.git .
 
 # Create required directories for website and logs
-mkdir -p ./www ./nginx/logs ./php/logs
-
+mkdir -p .php/www
 # Save passwords and database information into .env file
 echo "DB_NAME=${DB_NAME}" >> .env
 echo "DB_USER=${DB_USER}" >> .env
 echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
 echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}" >> .env
-
-# Replace placeholder domain name in Nginx configuration with the actual domain name
-sed -i "s/your-domain.com/$DOMAIN_NAME/g" nginx/conf.d/default.conf
 
 # Change ownership of the template files to the admin user
 sudo chown -R $ADMIN_USER:$ADMIN_USER /home/$ADMIN_USER/*
