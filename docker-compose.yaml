@@ -1,34 +1,20 @@
-version: '3.8'
-
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d  # Директорія для конфігурацій Nginx
-      - ./www:/var/www/html  # Загальна директорія для файлів сайтів
-      - ./nginx/logs:/var/log/nginx  # Логи Nginx
+  php-apache-environment:
+    container_name: php-apache
+    build:
+      context: ./php
+      dockerfile: Dockerfile
     depends_on:
-      - php
       - db
-    networks:
-      - app-network
-
-  php:
-    image: php:8.1-fpm
-    container_name: php
     volumes:
-      - ./www:/var/www/html  # Директорія для файлів сайтів
-      - ./php/logs:/var/log/php  # Логи PHP
-    networks:
-      - app-network
-
+      - ./php/www:/var/www/html/
+      - php_sessions:/var/lib/php/sessions
+    ports:
+      - 80:80
   db:
-    image: mariadb:latest
-    container_name: mariadb
+    container_name: db
+    image: mariadb:10.5
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -36,24 +22,23 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - app-network
+    ports:
+      - 3306:3306
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
-    environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    image: phpmyadmin/phpmyadmin
     ports:
-      - "8080:80"  # Власний порт для phpMyAdmin
+        - '8080:80'
+    restart: always
+    environment:
+        PMA_HOST: db
     depends_on:
-      - db
-    networks:
-      - app-network
+        - db
 
 volumes:
   db_data:
+  php_sessions:
 
 networks:
   app-network:
